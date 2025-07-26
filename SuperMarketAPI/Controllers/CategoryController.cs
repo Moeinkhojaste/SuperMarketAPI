@@ -1,80 +1,48 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.HttpResults;
+﻿// Controllers/CategoryController.cs
+
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using SuperMarketAPI.Data;
-using SuperMarketAPI.Models;
-using SuperMarketAPI.Models.DTOs;
-using System.Reflection.Metadata.Ecma335;
+using SuperMarketAPI.DTOs;
+using SuperMarketAPI.Services.Interfaces;
 
-namespace SuperMarketAPI.Controllers
+namespace SuperMarketAPI.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+public class CategoryController : ControllerBase
 {
-    [Authorize]
-    [ApiController]
-    [Route("api/[controller]")]
-    public class CategoryController : ControllerBase
+    private readonly ICategoryService _service;
+
+    public CategoryController(ICategoryService service) => _service = service;
+
+    [HttpGet]
+    public async Task<IActionResult> GetAll() =>
+        Ok(await _service.GetAllAsync());
+
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetById(int id)
     {
-        private readonly AppDbContext _context;
-        private readonly IMapper _mapper;
+        var category = await _service.GetByIdAsync(id);
+        return category == null ? NotFound() : Ok(category);
+    }
 
-        public CategoryController(AppDbContext context, IMapper mapper)
-        {
-            _context = context;
-            _mapper = mapper;
-        }
+    [HttpPost]
+    public async Task<IActionResult> Create([FromBody] CategoryCreateDto dto)
+    {
+        var created = await _service.CreateAsync(dto);
+        return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
+    }
 
-        [HttpGet]
-        public IActionResult GetAll()
-        {
-            var categories = _context.Categories
-                .Include(c => c.Products)
-                .ToList();
-            return Ok(categories);
-        }
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update(int id, [FromBody] CategoryUpdateDto dto)
+    {
+        await _service.UpdateAsync(id, dto);
+        return NoContent();
+    }
 
-        [HttpPost]
-        public IActionResult AddCategory([FromBody] CategoryCreateDTO categoryDto)
-        {
-
-            var category = _mapper.Map<Category>(categoryDto);
-            _context.Categories.Add(category);
-            _context.SaveChanges();
-
-            return CreatedAtAction(nameof(GetAll), new { id = category.Id }, category);
-        }
-
-        [HttpPut("{id}")]
-
-        public IActionResult UpdateCategory(int id, CategoryUpdateDTO updateDto)
-        {
-            var category = _context.Categories.Find(id);
-            if (category == null)
-                return NotFound();
-            _mapper.Map(updateDto, category);
-            _context.SaveChanges();
-            return NoContent();
-        }
-
-        [HttpDelete("{id}")]
-        public IActionResult DeleteCategory(int id)
-        {
-            var category = _context.Categories.Include(c => c.Products)
-                .FirstOrDefault(c => c.Id == id);
-
-            if (category == null)
-                return NotFound();
-
-            if (category.Products != null && category.Products.Any())
-                return BadRequest("cannot delete category that has products in it");
-
-            _context.Categories.Remove(category);
-            _context.SaveChanges();
-            return NoContent();
-
-        }
-            
-
-
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        await _service.DeleteAsync(id);
+        return NoContent();
     }
 }

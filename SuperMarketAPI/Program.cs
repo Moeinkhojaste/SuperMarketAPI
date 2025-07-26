@@ -1,45 +1,77 @@
-using Microsoft.EntityFrameworkCore;
-using SuperMarketAPI.Data;
-using SuperMarketAPI.Helpers;
+﻿using AutoMapper;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using SuperMarketAPI;
+using SuperMarketAPI.Data;
+using SuperMarketAPI.DTOs;
+using SuperMarketAPI.Models;
+using SuperMarketAPI.Repositories;
+using SuperMarketAPI.Repositories.Interfaces;
+using SuperMarketAPI.Services;
+using SuperMarketAPI.Services.Interfaces;
+using SuperMarketAPI.Validators; //
+// using SuperMarketAPI.Middlewares; 
+
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// JWT Config
+var jwtSettingsSection = builder.Configuration.GetSection("JwtSettings");
+builder.Services.Configure<JwtSettings>(jwtSettingsSection);
+var jwtSettings = jwtSettingsSection.Get<JwtSettings>();
+
+var key = Encoding.ASCII.GetBytes(jwtSettings.SecretKey);
 
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-}).AddJwtBearer(authenticationScheme => 
+})
+.AddJwtBearer(options =>
 {
-    authenticationScheme.RequireHttpsMetadata = true;
-    authenticationScheme.SaveToken = true;
-    authenticationScheme.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+    options.TokenValidationParameters = new TokenValidationParameters
     {
-        ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
         ValidateIssuer = true,
-        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidIssuer = jwtSettings.Issuer,
         ValidateAudience = true,
-        ValidAudience = builder.Configuration["Jwt:Audience"]
+        ValidAudience = jwtSettings.Audience,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(key)
     };
 });
 
-// Add services
+
+// Dependency Injection
+builder.Services.AddAuthorization();
 builder.Services.AddControllers();
+
+// FluentValidation
 builder.Services.AddFluentValidationAutoValidation();
-builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+builder.Services.AddValidatorsFromAssemblyContaining<ProductCreateDtoValidator>();
+
+// Database
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-builder.Services.AddAutoMapper(typeof(MappingProfile));
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 
-// Register the DbContext with dependency injection
+
+// Repositories & Services
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
+
+// Swagger
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
 var app = builder.Build();
 
 // Middlewares
@@ -51,9 +83,28 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseMiddleware<ErrorHandlingMiddleware>();
+
+// app.UseMiddleware<ErrorHandlingMiddleware>();
+
 app.UseAuthentication();
 app.UseAuthorization();
-app.MapControllers();
-app.Run();
 
+app.MapControllers();
+
+// Temporary debug code - remove after fixing
+using (var scope = app.Services.CreateScope())
+{
+    var mapper = scope.ServiceProvider.GetService<IMapper>();
+    try
+    {
+        mapper.ConfigurationProvider.AssertConfigurationIsValid();
+        Console.WriteLine("✅ AutoMapper configuration is valid");
+    }
+    catch (AutoMapperConfigurationException ex)
+    {
+        Console.WriteLine("❌ AutoMapper error:");
+        Console.WriteLine(ex.Message);
+    }
+}
+
+app.Run();

@@ -8,17 +8,7 @@ namespace SuperMarketAPI.Data
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
         }
-
-        // DbSet properties for your domain models
-        public DbSet<Product> Products { get; set; }
-        public DbSet<Category> Categories { get; set; }
-        // Add other DbSet properties for your business entities
-
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            base.OnModelCreating(modelBuilder);
-
-            // Configure your entity relationships and constraints here
-        }
+        public DbSet<Product> Products => Set<Product>();
+        public DbSet<Category> Categories => Set<Category>();
     }
 }

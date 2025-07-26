@@ -1,7 +1,8 @@
-﻿namespace SuperMarketAPI.Models.DTOs
+﻿// DTOs/CategoryUpdateDto.cs
+
+namespace SuperMarketAPI.DTOs;
+
+public class CategoryUpdateDto
 {
-    public class CategoryUpdateDTO
-    {
-        public string Name { get; set; }
-    }
+    public string Name { get; set; } = null!;
 }

@@ -1,21 +1,28 @@
 ﻿using AutoMapper;
-using SuperMarketAPI.Models;
 using SuperMarketAPI.Models.DTOs;
+using SuperMarketAPI.Models;
+using SuperMarketAPI.DTOs;
 
-namespace SuperMarketAPI.Helpers
+namespace SuperMarketAPI;
+
+public class MappingProfile : Profile
 {
-    public class MappingProfile : Profile
+    public MappingProfile()
     {
-        public MappingProfile() 
-        {
-            CreateMap<Product, ProductDTO>();
-            CreateMap<ProductDTO, Product>();
-            CreateMap<Product, ProductReadDto>();
-            CreateMap<ProductCreateDto, Product>();
-            CreateMap<UpdateProductDto, Product>();
-            CreateMap<CategoryCreateDTO, Category>();
-            CreateMap<CategoryUpdateDTO, Category>();
+        // Product mappings
+        CreateMap<Models.DTOs.ProductCreateDto, Product>();
+        //CreateMap<Product, ProductCreateDto>();
+        CreateMap<Product, Models.DTOs.ProductReadDto>()
+            .ForMember(dest => dest.CategoryName,
+                     opt => opt.MapFrom(src => src.Category.Name));
+        CreateMap<Models.DTOs.ProductUpdateDto, Product>().ReverseMap();
 
-        }
+        // Category mappings
+        CreateMap<Category, CategoryReadDto>()
+            .ForMember(dest => dest.Products,
+                opt => opt.MapFrom(src => src.Products));
+        CreateMap<CategoryCreateDto, Category>();
+        CreateMap<Product, CategoryProductDto>();
+        CreateMap<CategoryUpdateDto, Category>();
     }
 }

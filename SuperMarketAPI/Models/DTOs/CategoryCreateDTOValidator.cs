@@ -1,17 +1,14 @@
-﻿using FluentValidation;
-using SuperMarketAPI.Models.DTOs;
+﻿// Validators/CategoryCreateDtoValidator.cs
 
-namespace SuperMarketAPI.Models.DTOs
-    
+using FluentValidation;
+using SuperMarketAPI.DTOs;
+
+public class CategoryCreateDtoValidator : AbstractValidator<CategoryCreateDto>
 {
-    public class CategoryCreateDTOValidator : AbstractValidator<CategoryCreateDTO>
+    public CategoryCreateDtoValidator()
     {
-        public CategoryCreateDTOValidator() 
-        { 
-            RuleFor(x => x.Name)
-                .NotEmpty().WithMessage("Category name is required")
-                .MinimumLength(2).WithMessage("Category name must be at least 2 characters")
-                .MaximumLength(50).WithMessage("Category name must not exceed 50 characters");
-        }
+        RuleFor(x => x.Name)
+            .NotEmpty().WithMessage("Name is required.")
+            .MinimumLength(2).WithMessage("Name must be at least 2 characters.");
     }
 }

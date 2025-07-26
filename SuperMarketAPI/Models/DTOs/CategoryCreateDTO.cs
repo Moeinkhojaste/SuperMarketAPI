@@ -1,10 +1,8 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿// DTOs/CategoryCreateDto.cs
 
-namespace SuperMarketAPI.Models.DTOs
+namespace SuperMarketAPI.DTOs;
+
+public class CategoryCreateDto
 {
-    public class CategoryCreateDTO
-    {
-        //[Required(ErrorMessage = "Name is required.")]
-        public string Name { get; set; }
-    }
+    public string Name { get; set; } = null!;
 }

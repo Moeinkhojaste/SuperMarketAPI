@@ -1,18 +1,14 @@
-﻿using SuperMarketAPI.Models.DTOs;
+﻿// Validators/CategoryUpdateDtoValidator.cs
+
 using FluentValidation;
-using FluentValidation.AspNetCore;
+using SuperMarketAPI.DTOs;
 
-namespace SuperMarketAPI.Models.DTOs
+public class CategoryUpdateDtoValidator : AbstractValidator<CategoryUpdateDto>
 {
-    public class CategoryUpdateDTOValidator : AbstractValidator<CategoryUpdateDTO>
+    public CategoryUpdateDtoValidator()
     {
-        public CategoryUpdateDTOValidator()
-        {
-            RuleFor(x => x.Name)
-                .NotEmpty().WithMessage("Category name cannot be empty!")
-                .MinimumLength(2).WithMessage("Category name cannot be less than 2 characters")
-                .MaximumLength(20).WithMessage("Category name cannot exceed 20 characters ");
-        }
-
+        RuleFor(x => x.Name)
+            .NotEmpty().WithMessage("Name is required.")
+            .MinimumLength(2);
     }
 }
