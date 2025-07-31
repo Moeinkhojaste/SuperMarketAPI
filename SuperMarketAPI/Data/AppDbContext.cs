@@ -1,9 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using SuperMarketAPI.Models;
+using SuperMarketAPI.Models.IdentityEntities;
 
 namespace SuperMarketAPI.Data
 {
-    public class AppDbContext : DbContext
+    public class AppDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, Guid>
     {
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
@@ -12,3 +14,4 @@ namespace SuperMarketAPI.Data
         public DbSet<Category> Categories => Set<Category>();
     }
 }
+ 

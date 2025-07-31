@@ -1,78 +1,68 @@
-﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore;
-using SuperMarketAPI.Data;
+﻿// Services/ProductService.cs
+
+using AutoMapper;
+using SuperMarketAPI.DTOs;
 using SuperMarketAPI.Models;
-using SuperMarketAPI.Models.DTOs;
+using SuperMarketAPI.Repositories.Interfaces;
 using SuperMarketAPI.Services.Interfaces;
 
 namespace SuperMarketAPI.Services;
 
 public class ProductService : IProductService
 {
-    private readonly AppDbContext _context;
+    private readonly IProductRepository _repo;
     private readonly IMapper _mapper;
 
-    public ProductService(AppDbContext context, IMapper mapper)
+    public ProductService(IProductRepository repo, IMapper mapper)
     {
-        _context = context;
+        _repo = repo;
         _mapper = mapper;
-    }
-
-    public async Task<List<ProductReadDto>> GetAllAsync()
-    {
-        var products = await _context.Products
-            .Include(p => p.Category)
-            .ToListAsync();
-        await _context.SaveChangesAsync();
-        return _mapper.Map<List<ProductReadDto>>(products);
-        
-    }
-
-    public async Task<ProductReadDto?> GetByIdAsync(int id)
-    {
-        var product = await _context.Products
-            .Include(p => p.Category)
-            .FirstOrDefaultAsync(p => p.Id == id);
-
-        return product == null ? null : _mapper.Map<ProductReadDto>(product);
     }
 
     public async Task<ProductReadDto> CreateAsync(ProductCreateDto dto)
     {
-        // AutoMapper will handle this conversion
+        if (dto == null)
+            throw new ArgumentNullException(nameof(dto));
+
+        if (string.IsNullOrWhiteSpace(dto.Name))
+            throw new ArgumentException("Product name is required");
+
         var product = _mapper.Map<Product>(dto);
+        await _repo.AddAsync(product);
 
-        _context.Products.Add(product);
-        await _context.SaveChangesAsync();
+        return _mapper.Map<ProductReadDto>(product);
+    }
 
-        // Explicitly load the category for the response
-        await _context.Entry(product)
-            .Reference(p => p.Category)
-            .LoadAsync();
+    public async Task<List<ProductReadDto>> GetAllAsync()
+    {
+        var products = await _repo.GetAllAsync();
+        return _mapper.Map<List<ProductReadDto>>(products);
+    }
 
-        // Map to read DTO
+    public async Task<ProductReadDto?> GetByIdAsync(int id)
+    {
+        var product = await _repo.GetByIdAsync(id);
         return _mapper.Map<ProductReadDto>(product);
     }
 
     public async Task<bool> UpdateAsync(int id, ProductUpdateDto dto)
     {
-        var product = await _context.Products.FindAsync(id);
-        if (product == null) return false;
+        var product = await _repo.GetByIdAsync(id);
+        if (product == null)
+            return false;
 
         _mapper.Map(dto, product);
-        await _context.SaveChangesAsync();
+        await _repo.UpdateAsync(product);
         return true;
     }
 
     public async Task<bool> DeleteAsync(int id)
     {
-        var product = await _context.Products.FindAsync(id);
-        if (product == null) return false;
+        var product = await _repo.GetByIdAsync(id);
+        if (product == null)
+            return false;
 
-        _context.Products.Remove(product);
-        await _context.SaveChangesAsync();
+        await _repo.DeleteAsync(product);
         return true;
     }
 }
-
-// new

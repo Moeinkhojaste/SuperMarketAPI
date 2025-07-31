@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.36109.1 d17.14
+VisualStudioVersion = 17.14.36109.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SuperMarketAPI", "SuperMarketAPI\SuperMarketAPI.csproj", "{D1A450E1-088F-4C99-81F0-ED0D4936DFBC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SuperMarketAPI.Tests", "SuperMarketAPI.Tests\SuperMarketAPI.Tests.csproj", "{7EEBCB89-92D7-446C-8DB6-49CE92ABD73D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{D1A450E1-088F-4C99-81F0-ED0D4936DFBC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D1A450E1-088F-4C99-81F0-ED0D4936DFBC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D1A450E1-088F-4C99-81F0-ED0D4936DFBC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7EEBCB89-92D7-446C-8DB6-49CE92ABD73D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7EEBCB89-92D7-446C-8DB6-49CE92ABD73D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7EEBCB89-92D7-446C-8DB6-49CE92ABD73D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7EEBCB89-92D7-446C-8DB6-49CE92ABD73D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
